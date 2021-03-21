@@ -1,12 +1,6 @@
-// const TeamGenerator = require('./lib/TeamGenerator');
-
-// new TeamGenerator().initalizeGenerator();
-
-// // const Game = require('./lib/Game');
-
-// // new Game().initializeGame();
-
 const inquirer = require('inquirer');
+const fs = require('fs');
+
 const Employee = require('./lib/Employee');
 const Manager = require('./lib/Manager');
 const Engineer = require('./lib/Engineer');
@@ -125,11 +119,68 @@ Please follow the prompts to create your team.
         .then(({ addNewEmployee }) => {
             if (!addNewEmployee) {
                 console.log("Thank you for entering your employee!");
-                console.log(employeeProfiles);
+                console.log(employeeProfiles, employeeProfiles.length);
+                //return employeeProfiles;
+                generateEmployeeCard(employeeProfiles);
             } else {
                 newEmployee();
             }
         })
+    });
+};
+
+// get information based on role of employee
+const employeeRole = (employee) => {
+    switch (employee.getRole()) {
+        case "Manager":
+            return `Office Number: ${employee.getOfficeNumber()}`;
+        case "Engineer":
+            return `Github Username: <a href ="https://github.com/${employee.getGithub()}" target="_blank">${employee.getGithub()}</a>`;
+        case "Intern":
+            return `School: ${employee.getSchool()}`;
+    }
+};
+const employeeIcon = (employee) => {
+    switch (employee.getRole()) {
+        case "Manager":
+            return `<i class="ri-cup-line"></i> <p>Manager</p>`;
+        case "Engineer":
+            return `<span class="oi oi-wrench"></span> <p>Engineer</p>`;
+        case "Intern":
+            return `<span class="oi oi-book"></span> <p>Intern</p>`;
+    }
+};
+
+const generateEmployeeCard = employeeProfiles => {
+    // empty array to store generated employee cards
+    const employeeCardArray = [];
+    employeeProfiles.forEach((employee) => {
+        const employeeCard = `
+        <div class="card" style="width: 18rem;">
+            <div class="card-body bg-primary text-white">
+                <h5 class="card-title">${employee.getName()}</h5>
+                <p class="card-text">${employeeIcon(employee)}</p>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">ID: ${employee.getId()}</li>
+                <li class="list-group-item">Email: <a href ="mailto: ${employee.getEmail()}">${employee.getEmail()}</a></li>
+                <li class="list-group-item">${employeeRole(employee)}</li>
+            </ul>
+        </div>
+        `;
+        // push to card array
+        employeeCardArray.push(employeeCard);
+    })
+    console.log(employeeCardArray);
+    generateHTML(employeeCardArray);
+};
+
+const generateHTML = employeeCardArray => {
+    fs.copyFile('./src/page-template.html', './dist/index.html', (err) => {
+        if (err) throw err;
+        fs.appendFile('./dist/index.html', employeeCardArray.join(""), (err) => {
+            if (err) throw err;
+        });
     });
 };
 
